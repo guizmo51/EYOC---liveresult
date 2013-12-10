@@ -1,0 +1,17 @@
+table {
+	font-size: 10px;
+	margin-top: 20px;
+}
+
+.update {
+	font-family: verdana,sans-serif;
+	font-size: 10px;
+}
+
+.gap {
+	color: #f00;
+}
+
+.runner {
+	font-weight: bold;
+}

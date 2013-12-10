@@ -1,0 +1,136 @@
+<html>
+<head>
+<title>Sprint finals - WOC 2001</title>
+<link rel="stylesheet" type="text/css" media="screen" href="jquery-ui-1.8.15.custom/css/start/jquery-ui-1.8.15.custom.css" />
+<link rel="stylesheet" type="text/css" media="screen" href="jqgrid/css/ui.jqgrid.css" />
+
+<style type="text/css">
+h1 {
+	font-family: Tahoma,sans-serif;
+	font-size: 32px;
+	text-align: left;
+}
+
+table {
+	font-size: 10px;
+	margin: auto 0 auto 0;
+	width: 100%;
+}
+</style>
+
+<script language="JavaScript" src="jquery-1.6.2.min.js"></script>
+<script src="jqgrid/js/i18n/grid.locale-en.js" type="text/javascript"></script>
+<script src="jqgrid/js/jquery.jqGrid.min.js" type="text/javascript"></script>
+<script src="jquery.timers-1.2.js" type="text/javascript"></script>
+<script language="JavaScript">
+
+$(document).ready(function(){
+
+	var updateurl = "fileMEN.json";
+	var classes = [
+		{"selector": "#resultlist", "classcode": "M", "title": "Men A", "sortcol": "startTime"},
+		];
+	
+	function splittimesort(cell) {
+		if (cell == "" || cell == "DQ" || cell == " ")
+			return "99:99";
+		else
+			return cell;
+	}
+	
+	function starttimesort(cell) {
+		if (cell == "")
+			return "9999999999999";
+		else
+			return cell;
+	}
+	
+	for (i=0; i < classes.length; i++) {
+		
+		$(classes[i]["selector"]).jqGrid({
+		datatype: 'clientSide',
+		colNames:['Bip', 'Name', 'Country',  'Start time', 'Classification', 'R1', 'R2', 'R3', 'R4', 'Race time'],
+		colModel : [
+			{name:'id', index:'id', width:30, sortable: false}, 
+			{name:'name', index:'name', width:180, sortable: false}, 
+			{name:'club', index:'club', width:110, sortable: false},
+			{name:'startTime', index:'startTime', width:90, sortable: true},
+			{name:'classification', index:'classification', width:80, hidden:true, sortable: false},
+			{name:'9', index:'9', width:60, sorttype: splittimesort},
+			{name:'12', index:'12', width:60, sorttype: splittimesort},
+			{name:'14', index:'14', width:60, sorttype: splittimesort},
+			{name:'17', index:'17', width:60, sorttype: splittimesort},
+			{name:'raceTime', index:'raceTime', width:120, sorttype: splittimesort},
+		],
+		sortname: 'starttime',
+		sortorder: 'asc',
+		viewrecords: true,
+		gridview: true,
+		caption: classes[i].title,
+		rownumbers: true,
+		height: 1100,
+		viewsortcols: [true,'vertical',true],
+		altRows: true,
+		rowNum: 500
+		});
+	}
+	  	  
+	function updateLists(resp) {
+		for (c=0; c < classes.length; c++) {
+			/* store sorting state  */
+/*			selector = classes[c].selector
+			lastsort = $(selector).getGridParam("lastsort");
+			sortcol = $(selector).getGridParam("colModel")[lastsort].name;
+			classes[c].sortcol = sortcol; */
+
+			/* reset grid */
+			$(classes[c].selector).clearGridData();
+		}
+
+		/* insert new data */
+		for (i=0; i < resp.records; i++) {
+			
+			for (c=0; c < classes.length; c++) {
+				/* insert row into tables */
+				
+				if (resp.rows[i].cell["class"] == classes[c].classcode) {
+					if (resp.rows[i].cell.classification == 0)
+						$(classes[0].selector).addRowData(resp.rows[i].id, resp.rows[i].cell);
+					else
+						$(classes[0].selector).addRowData(resp.rows[i].id, {name: resp.rows[i].cell.name, club: resp.rows[i].cell.club, startTime: resp.rows[i].cell.startTime, raceTime: "DQ"});
+					break;
+				}
+			}
+		}
+
+		for (c=0; c < classes.length; c++) {
+			/* apply stored sorting state */
+			$(classes[c].selector).trigger("reloadGrid");
+//				sortcol = classes[c].sortcol;
+//				if (sortcol != $(classes[c].selector)
+//				$(classes[c].selector).sortGrid(sortcol);
+		}
+				
+		$("#info").text("Last sort: " + classes[0].sortcol);
+	}
+	
+	/* init timer, ajax + json */
+	$(document).everyTime(10000, function() {
+	$.getJSON(updateurl, function(resp) {
+			updateLists(resp);
+		});
+	});
+	  
+	/* first time table initialization */
+	$.getJSON(updateurl, function(obj) {
+		updateLists(obj);
+	});
+
+});
+   </script>
+</head>
+ <body>
+  <h1 class="titre">WOC 2011 - Sprint finals (M)</h1>
+  <table id="resultlist"><tr><td/></tr></table>
+ </body>
+ </html>
